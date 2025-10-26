@@ -2,6 +2,25 @@
 
 Support for Hiwonder bus servos in the BAM (Better Actuator Models) framework.
 
+## Control Methods
+
+### Method 1: Hiwonder Board Controller (Recommended ⭐)
+Control servos via the **Hiwonder Bus Servo Controller Board**:
+- ✅ More reliable communication
+- ✅ Synchronized multi-servo control
+- ✅ Built-in battery voltage monitoring
+- ✅ Hardware-level servo control
+- ✅ Professional solution
+
+**See**: `BOARD_CONTROLLER_GUIDE.md` for complete guide
+
+### Method 2: Direct Serial Communication
+Control servos directly via USB-to-TTL adapter:
+- Lower cost (just USB-TTL adapter)
+- Simpler for single servo
+- Good for prototyping
+- Documented in this file (below)
+
 ## Supported Models
 
 ### HTD-45H (High-Torque Industrial)
@@ -10,6 +29,7 @@ Support for Hiwonder bus servos in the BAM (Better Actuator Models) framework.
 - **Features**: Metal gears, industrial grade
 - **Use case**: High-torque applications, robotic arms, primary model for BAM testing
 - **Motor name**: `htd45h`
+- **Works with**: Board controller ✅ or Direct serial ✅
 
 ### LX-16A (Hobby - General Purpose)
 - **Voltage**: 4.8V - 8.4V (6V recommended)
@@ -79,9 +99,41 @@ sudo apt install setserial
 
 ## Usage
 
+### Quick Start: Choose Your Method
+
+**Option A: Board Controller (Recommended)**
+```bash
+python -m bam.hiwonder.record_board \
+    --port /dev/ttyUSB0 \
+    --id 1 \
+    --mass 0.3 \
+    --length 0.12 \
+    --motor htd45h \
+    --vin 12.0 \
+    --logdir data_raw
+```
+
+**Option B: Direct Serial**
+```bash
+python -m bam.hiwonder.record \
+    --port /dev/ttyUSB0 \
+    --id 1 \
+    --mass 0.3 \
+    --length 0.12 \
+    --motor htd45h \
+    --vin 12.0 \
+    --logdir data_raw
+```
+
+Both produce compatible data for BAM! See `BOARD_CONTROLLER_GUIDE.md` for details.
+
+---
+
+## Method 2: Direct Serial Communication (Detailed)
+
 ### Single Recording
 
-Record a single trajectory:
+Record a single trajectory using direct serial:
 
 ```bash
 # For HTD-45H (12V, recommended for BAM testing)
