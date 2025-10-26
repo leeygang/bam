@@ -3,12 +3,18 @@ from .erob.actuator import ErobActuator
 from .dynamixel.actuator import MXActuator
 from .feetech.actuator import STS3215Actuator
 from .unitree.actuator import UnitreeGo1Actuator
+from .hiwonder.actuator import (
+    HiwonderHTD45HActuator,
+    HiwonderLX16AActuator,
+    HiwonderLD27MGActuator,
+    HiwonderLX15DActuator
+)
 
 actuators = {
     # Dynamixel MX series
     "mx64": lambda: MXActuator(Pendulum),
     "mx106": lambda: MXActuator(Pendulum),
-    
+
     # eRob actuators with custom PD controller (mostly used in experiments to model
     # frictions)
     "erob80_100": lambda: ErobActuator(Pendulum, damping=2.0),
@@ -18,5 +24,11 @@ actuators = {
     "sts3215": lambda: STS3215Actuator(Pendulum),
 
     # Unitree Go1
-    "unitree_go1": lambda: UnitreeGo1Actuator(Pendulum)
+    "unitree_go1": lambda: UnitreeGo1Actuator(Pendulum),
+
+    # Hiwonder bus servos
+    "htd45h": lambda: HiwonderHTD45HActuator(Pendulum),  # 12V high-torque model
+    "lx16a": lambda: HiwonderLX16AActuator(Pendulum),
+    "ld27mg": lambda: HiwonderLD27MGActuator(Pendulum),
+    "lx15d": lambda: HiwonderLX15DActuator(Pendulum),
 }
