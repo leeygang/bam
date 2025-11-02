@@ -116,27 +116,22 @@ python -m bam.erob.record \
 
 ### Hiwonder Servos
 
-Hiwonder bus servos (HTD-45H, LX-16A, LD-27MG, LX-15D) are supported with **two control methods**:
+Hiwonder bus servos (HTD-45H, LX-16A, LD-27MG, LX-15D) are supported with **two control methods**.
 
-**Method 1: Board Controller (Recommended ⭐)**
-- More reliable, synchronized control via Hiwonder Bus Servo Controller Board
-- See `bam/hiwonder/BOARD_CONTROLLER_GUIDE.md`
+**Complete documentation**: See `bam/hiwonder/EXPERIMENT_GUIDE.md` for full experimental setup and data collection guide.
 
-**Method 2: Direct Serial**
-- Direct control via USB-to-TTL adapter
-
-**Quick start (HTD-45H with Board Controller):**
+**Quick start (HTD-45H with Board Controller - Recommended):**
 ```bash
-# Single recording
+# Test recording
 python -m bam.hiwonder.record_board \
     --port /dev/ttyUSB0 \
     --id 1 \
     --mass 0.3 \
     --length 0.12 \
-    --logdir data_raw_htd45h \
-    --trajectory sin_time_square \
     --motor htd45h \
-    --vin 12.0
+    --vin 12.0 \
+    --logdir data_raw_htd45h \
+    --trajectory lift_and_drop
 
 # Batch recording (all trajectories and KP values)
 python -m bam.hiwonder.all_record_board \
@@ -144,32 +139,17 @@ python -m bam.hiwonder.all_record_board \
     --id 1 \
     --mass 0.3 \
     --length 0.12 \
-    --logdir data_raw_htd45h \
     --motor htd45h \
-    --vin 12.0
+    --vin 12.0 \
+    --logdir data_raw_htd45h
 ```
 
-**Quick start (Direct Serial - alternative):**
-```bash
-# Use record.py and all_record.py instead of record_board.py
-python -m bam.hiwonder.record \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --logdir data_raw_htd45h \
-    --trajectory sin_time_square \
-    --motor htd45h \
-    --vin 12.0
-```
+**Alternative (Direct Serial):**
+Replace `record_board` with `record` and `all_record_board` with `all_record`.
 
-**Supported motors:** `htd45h` (12V, 45 kg·cm), `lx16a` (6V), `ld27mg` (7.4V), `lx15d` (6V)
+**Supported motors:** `htd45h` (12V, 45 kg·cm - primary), `lx16a` (6V), `ld27mg` (7.4V), `lx15d` (6V)
 
-**Hardware options:**
-- **Board Controller**: Hiwonder Bus Servo Controller Board (recommended)
-- **Direct Serial**: USB-to-TTL adapter (FTDI, CH340, CP2102)
-- **HTD-45H: 12V power required** (primary model for testing)
-- LX-16A/LX-15D: 6V, LD-27MG: 7.4V
+**Hardware:** Board Controller (recommended) or USB-to-TTL adapter + 12V power supply for HTD-45H
 
 ### Processing and Fitting
 
