@@ -252,7 +252,23 @@ Where the arguments are:
 * `params`: The file where the model parameters are stored (is necessary if `sim` is present)
 
 
-If you want to check your logs at each step of the data collection and processing, you can use the same command without the `--sim` flag.
+If you want to check your logs at each step of the data collection and processing, you can use the same command without the `--sim` flag:
+
+```bash
+# Check data quality after processing
+uv run python -m bam.plot \
+    --actuator htd45h \
+    --logdir data_processed_htd45h
+```
+
+**What to check in the plots:**
+- Position curves are smooth and continuous (no sudden jumps)
+- Pendulum swings at least ±0.5 rad (preferably ±1.0 rad)
+- Speed plot shows reasonable velocity changes
+- Control voltage is within expected range (e.g., ±12V for HTD-45H)
+- Red shaded areas show torque-off periods as expected
+
+**For detailed plot quality checking guide**, see `bam/hiwonder/EXPERIMENT_GUIDE.md` section "How to Check Plot Quality".
 
 ## Drive/Backdrive diagram
 

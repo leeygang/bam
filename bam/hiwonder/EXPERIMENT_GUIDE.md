@@ -650,6 +650,7 @@ uv run python -m bam.plot \
     --logdir data_processed_htd45h
 
 # Check plots show smooth trajectories, no obvious errors
+# See "How to Check Plot Quality" section below for detailed guidance
 
 # 3. Fit baseline model (M1: Coulomb-Viscous)
 mkdir -p params/htd45h
@@ -734,6 +735,156 @@ python -m bam.drive_backdrive \
 </details>
 
 ## Expected Results
+
+### How to Check Plot Quality
+
+After running `python -m bam.plot --actuator htd45h --logdir data_processed_htd45h`, matplotlib will show a plot for each recorded trajectory with 2-3 subplots:
+
+#### Plot Layout
+1. **Top subplot (Position)**: Shows joint angle over time
+   - Blue line: Actual position (`q`)
+   - Black dashed line: Goal position (`goal_q`)
+
+2. **Middle subplot (Speed)**: Shows angular velocity over time (if available)
+   - Blue line: Angular velocity (`speed`)
+
+3. **Bottom subplot (Control)**: Shows voltage/control signal
+   - Blue line: Control signal (voltage in volts)
+   - Red shaded areas: Torque disabled periods
+
+#### What to Look For - Good Quality Data ✅
+
+**Position Plot (Top):**
+- ✅ **Smooth curves**: Position should be continuous without sudden jumps
+- ✅ **Follows trajectory**: Actual position (blue) should roughly track goal position (black dashed)
+- ✅ **Reasonable range**: Pendulum should swing at least ±0.5 rad (±30°), ideally ±1.0 rad or more
+- ✅ **Complete motion**: Should show the full trajectory from start to end
+- ✅ **Returns to zero**: At the end, position should return close to 0 rad (hanging down)
+
+**Example good position plot:**
+```
+Position [rad]
+  1.5 |           /\
+  1.0 |         /    \
+  0.5 |       /        \
+  0.0 |-----/            \--------
+ -0.5 |                    \    /
+ -1.0 |                      \/
+      |_________________________
+      0    5    10   15   20   Time [s]
+```
+
+**Speed Plot (Middle):**
+- ✅ **Smooth transitions**: Speed changes should be gradual, not jagged
+- ✅ **Zero crossings**: Speed should cross zero when pendulum changes direction
+- ✅ **Reasonable magnitude**: Typical speeds 1-5 rad/s for pendulum motion
+- ✅ **Some noise is OK**: HTD-45H has limited encoder resolution, small noise is normal
+
+**Control Plot (Bottom):**
+- ✅ **Reasonable voltage**: Should be within ±12V for HTD-45H
+- ✅ **Torque-off periods visible**: Red shaded areas show when torque is disabled
+- ✅ **Smooth when enabled**: Control signal should be continuous (not extremely noisy)
+
+#### Warning Signs - Poor Quality Data ⚠️
+
+**Position Issues:**
+- ❌ **Sudden jumps**: Large discontinuities (>0.2 rad jump) indicate communication errors
+- ❌ **Flat sections**: Long periods with no movement may indicate stuck servo
+- ❌ **Extreme values**: Position >3.14 rad or <-3.14 rad suggests calibration issue
+- ❌ **Doesn't return to zero**: Final position far from 0 rad indicates problem
+- ❌ **Too small range**: Swing <0.3 rad means insufficient excitation
+
+**Example bad position plot (jumps):**
+```
+Position [rad]
+  1.5 |      /\
+  1.0 |    /    \___  <- Sudden jump
+  0.5 |  /           |
+  0.0 |/             |_____
+      |_________________________
+```
+
+**Speed Issues:**
+- ❌ **Extremely jagged**: If speed plot looks like random noise, data quality is poor
+- ❌ **Unrealistic values**: Speeds >10 rad/s for pendulum are suspicious
+- ❌ **Missing data**: If speed is all zeros, speed estimation failed
+
+**Control Issues:**
+- ❌ **Saturated voltage**: Constantly at ±12V means controller is saturating
+- ❌ **Extreme noise**: Wild oscillations in control signal
+- ❌ **Always zero**: Control never activates (torque issue)
+
+#### Specific Trajectory Checks
+
+**For `lift_and_drop`:**
+- Should see smooth lift upward (positive position)
+- Flat section at peak (torque disabled - red shading)
+- Free fall with oscillations (damped sinusoid)
+- Example: Position lifts to +1.5 rad, drops, swings through -1.0 rad, returns to 0
+
+**For `sin_time_square`:**
+- Sinusoidal motion with progressively increasing frequency
+- Position oscillates symmetrically around 0 rad
+- Amplitude decreases as frequency increases
+
+**For `sin_sin`:**
+- Smooth oscillations with two superimposed frequencies
+- Should look like a complex wave pattern
+- Consistent amplitude throughout
+
+**For `up_and_down`:**
+- Controlled rise and fall
+- No free-fall sections (torque always on except red areas)
+- Smooth transitions
+
+#### What to Do Based on Plot Inspection
+
+**If plots look good:**
+```bash
+# Proceed to model fitting
+uv run python -m bam.fit \
+    --actuator htd45h \
+    --model m1 \
+    --logdir data_processed_htd45h \
+    --output params/htd45h/m1.json \
+    --trials 5000
+```
+
+**If you see issues:**
+
+1. **Occasional jumps in 1-2 trajectories:**
+   - Acceptable - Delete those specific bad trajectory files
+   - Re-run those trajectories if needed
+   - Proceed with remaining good data
+
+2. **Consistent issues across all trajectories:**
+   - Check hardware: servo mounting, power supply, cables
+   - Verify pendulum swings freely (no binding)
+   - Check communication: try lowering sampling rate
+   - Re-collect all data after fixing issues
+
+3. **Position range too small:**
+   - Increase pendulum mass or length
+   - Check servo can handle the load
+   - Verify trajectory parameters
+
+4. **Noisy speed data:**
+   - This is normal for HTD-45H (limited encoder resolution)
+   - Processing and fitting will handle this
+   - Only worry if position is also very noisy
+
+#### Quick Visual Checklist
+
+For each trajectory plot, verify:
+- [ ] Position curve is continuous (no jumps >0.2 rad)
+- [ ] Position swings at least ±0.5 rad
+- [ ] Position returns to ~0 rad at end
+- [ ] Speed plot (if shown) has reasonable shape
+- [ ] Control voltage is within ±12V range
+- [ ] Red shaded areas (torque off) appear where expected
+- [ ] Overall plot looks like pendulum motion (not random)
+
+**Target: At least 8-10 good trajectories out of 12** for successful model fitting.
 
 ### Data Quality Indicators
 
