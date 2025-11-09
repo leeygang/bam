@@ -26,6 +26,8 @@ Complete guide for collecting friction identification data with the Hiwonder HTD
 
 This guide covers the complete experimental setup for using the **Hiwonder HTD-45H** servo (12V, 45 kg·cm) for friction model identification. The HTD-45H is an industrial-grade bus servo with metal gears, suitable for accurate friction characterization.
 
+**IMPORTANT**: The HTD-45H must be controlled via the **Hiwonder Bus Servo Controller Board**. Direct serial communication is not supported for this servo.
+
 ### Visual References (Highly Recommended!)
 
 **Before you start**, watch and review these resources to see what the setup looks like:
@@ -95,8 +97,8 @@ This guide covers the complete experimental setup for using the **Hiwonder HTD-4
 - Comes with: Servo, horn(s), mounting screws, cable
 
 **Control Hardware:**
-- **Hiwonder Bus Servo Controller Board**: Hiwonder store (search "bus servo controller board")
-- **USB-to-TTL adapter**: Amazon, AliExpress (search "FTDI USB TTL" or "CH340 USB serial")
+- **Hiwonder Bus Servo Controller Board**: Required (Hiwonder store - search "bus servo controller board")
+- **USB cable**: USB-A to USB-B or USB-C (for board to computer connection)
 - **12V power supply**: Any electronics supplier (must provide 2-3A)
 
 **Mechanical parts:**
@@ -107,10 +109,9 @@ This guide covers the complete experimental setup for using the **Hiwonder HTD-4
 ### Electronics
 - **HTD-45H servo** (Hiwonder bus servo) - typically includes servo horn
 - **12V power supply** (2-3A minimum capacity, regulated DC bench supply recommended)
-- **Control method** (choose one):
-  - **Option A (Recommended)**: Hiwonder Bus Servo Controller Board + USB cable
-  - **Option B**: USB-to-TTL adapter (FTDI FT232, CH340, CP2102)
-- **Cables**: Power cables with alligator clips or terminals, USB cable, jumper wires (male-to-female)
+- **Hiwonder Bus Servo Controller Board** (required for HTD-45H control)
+- **USB cable** (for board to computer connection)
+- **Cables**: Power cables with alligator clips or terminals, jumper wires if needed
 
 ### Mechanical Components for Pendulum
 - **Servo mount/base**: Stable mounting bracket or base plate
@@ -384,7 +385,7 @@ Measure distance from **servo rotation axis** to **center of mass** of end weigh
 
 ### Step 5: Electrical Wiring
 
-#### Option A: Board Controller (Recommended)
+The HTD-45H servo must be controlled via the Hiwonder Bus Servo Controller Board:
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -402,30 +403,11 @@ Measure distance from **servo rotation axis** to **center of mass** of end weigh
 └──────────────────────────────────────────────┘
 ```
 
-**Steps:**
+**Wiring Steps:**
 1. Connect 12V power supply to board power input (observe polarity!)
 2. Connect HTD-45H servo cable to Port 1 on board
 3. Connect USB cable from board to computer
 4. Verify board power LED is ON
-
-#### Option B: Direct Serial (USB-TTL)
-
-```
-HTD-45H Servo          USB-TTL Adapter          Power Supply
-─────────────          ────────────────         ─────────────
-Red (Power)   ────┐                      ┌───── 12V (+)
-                  └──────────────────────┘
-
-Brown (GND)   ────┬──── GND              └───── GND (-)
-
-Orange (Signal) ── TX/RX (signal)
-```
-
-**Steps:**
-1. Connect HTD-45H **Brown** wire to USB-TTL **GND** and Power Supply **GND**
-2. Connect HTD-45H **Red** wire to Power Supply **12V** (NOT to USB-TTL!)
-3. Connect HTD-45H **Orange** wire to USB-TTL **TX/RX** (signal)
-4. Connect USB-TTL to computer via USB
 
 **CRITICAL SAFETY**:
 - **Never** power servo from USB (insufficient current, will damage USB)
@@ -523,7 +505,6 @@ ls -l /dev/tty.*     # macOS
 
 Before collecting full dataset, run a single test recording to verify hardware setup:
 
-**Board Controller:**
 ```bash
 # Using uv (recommended)
 uv run python -m bam.hiwonder.record_board \
@@ -538,31 +519,6 @@ uv run python -m bam.hiwonder.record_board \
 
 # Using regular python
 python -m bam.hiwonder.record_board \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --motor htd45h \
-    --vin 12.0 \
-    --logdir test_data \
-    --trajectory lift_and_drop
-```
-
-**Direct Serial:**
-```bash
-# Using uv (recommended)
-uv run python -m bam.hiwonder.record \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --motor htd45h \
-    --vin 12.0 \
-    --logdir test_data \
-    --trajectory lift_and_drop
-
-# Using regular python
-python -m bam.hiwonder.record \
     --port /dev/ttyUSB0 \
     --id 1 \
     --mass 0.3 \
@@ -619,7 +575,6 @@ python -m bam.hiwonder.record \
 
 Once test recording succeeds, collect complete dataset for model fitting:
 
-**Board Controller (Recommended):**
 ```bash
 # Using uv (recommended)
 uv run python -m bam.hiwonder.all_record_board \
@@ -634,31 +589,6 @@ uv run python -m bam.hiwonder.all_record_board \
 
 # Using regular python
 python -m bam.hiwonder.all_record_board \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --motor htd45h \
-    --vin 12.0 \
-    --logdir data_raw_htd45h \
-    --speak
-```
-
-**Direct Serial:**
-```bash
-# Using uv (recommended)
-uv run python -m bam.hiwonder.all_record \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --motor htd45h \
-    --vin 12.0 \
-    --logdir data_raw_htd45h \
-    --speak
-
-# Using regular python
-python -m bam.hiwonder.all_record \
     --port /dev/ttyUSB0 \
     --id 1 \
     --mass 0.3 \
@@ -841,9 +771,10 @@ python -m bam.drive_backdrive \
 1. Check 12V power supply is connected and ON
 2. Measure voltage at servo with multimeter (should be ~12V)
 3. Verify all GND connections are solid
-4. Check servo LED (if equipped) is ON
-5. Try different servo ID: `--id 2` (servo might be misconfigured)
-6. Test servo with Hiwonder's official software
+4. Check board power LED (should be ON)
+5. Verify USB connection to computer
+6. Try different servo ID: `--id 2` (servo might be misconfigured)
+7. Check servo cable is properly connected to board Port 1
 
 #### Communication errors
 **Symptoms**: "Timeout", "No response", or checksum errors
@@ -851,10 +782,10 @@ python -m bam.drive_backdrive \
 **Solutions:**
 1. Verify correct serial port: `ls -l /dev/ttyUSB*`
 2. Check permissions: `sudo chmod 666 /dev/ttyUSB0`
-3. Try lower baud rate: `--baudrate 9600`
-4. Verify servo ID is 1: `--id 1`
-5. Check cable connections (especially signal wire)
-6. Try different USB port on computer
+3. Verify servo ID is 1: `--id 1`
+4. Check USB cable connection to board
+5. Try different USB port on computer
+6. Restart the board controller
 
 #### Erratic or jerky movement
 **Symptoms**: Servo moves but not smoothly
@@ -894,11 +825,12 @@ python -m bam.drive_backdrive \
 **Symptoms**: Position traces look jagged or noisy in plots
 
 **Solutions:**
-1. This is **normal** for Hiwonder servos (no high-resolution encoder)
+1. This is **normal** for HTD-45H servos (limited encoder resolution)
 2. Processing step filters data automatically
 3. Ensure stable mechanical setup (no vibration)
 4. Check for loose connections (electrical or mechanical)
 5. Verify power supply is clean (no voltage fluctuations)
+6. Ensure board controller is properly powered and grounded
 
 #### Inconsistent results across trajectories
 **Symptoms**: Some trajectories fit well, others don't
@@ -911,19 +843,14 @@ python -m bam.drive_backdrive \
 
 ### Board Controller vs Direct Serial
 
-**When to use Board Controller:**
-- More reliable communication
-- Multi-servo setups (future expansion)
-- Professional/production use
-- When reliability is critical
+The HTD-45H servo **requires** the Hiwonder Bus Servo Controller Board for proper operation. Direct serial communication is not supported.
 
-**When to use Direct Serial:**
-- Single servo testing
-- Budget constraints
-- Quick prototyping
-- Learning/education
-
-Both methods produce **identical data format** for BAM processing.
+**Why the board controller is required:**
+- Provides reliable half-duplex communication protocol
+- Handles voltage regulation and signal conditioning
+- Supports multi-servo setups
+- Includes safety features and error handling
+- Ensures proper timing for servo communication
 
 ## Best Practices
 

@@ -4,7 +4,14 @@ This document describes the complete implementation of Hiwonder servo support in
 
 ## Overview
 
-The implementation adds support for Hiwonder bus servos (LX-16A, LD-27MG, LX-15D) to the BAM friction identification system. These are low-cost Chinese servos commonly used in hobbyist and educational robotics.
+The implementation adds support for Hiwonder bus servos to the BAM friction identification system:
+
+- **HTD-45H**: Industrial servo (45 kg·cm @ 12V) - **Requires board controller**
+- **LX-16A**: Hobby servo (1.6 kg·cm @ 6V) - Supports both direct serial and board controller
+- **LD-27MG**: High-torque hobby servo (27 kg·cm @ 7.4V) - Supports both methods
+- **LX-15D**: Compact hobby servo (1.5 kg·cm @ 6V) - Supports both methods
+
+**IMPORTANT**: The HTD-45H servo must use the Hiwonder Bus Servo Controller Board. Direct serial communication is only supported for the hobby servos (LX-16A, LD-27MG, LX-15D).
 
 ## Implementation Structure
 
@@ -12,13 +19,20 @@ The implementation adds support for Hiwonder bus servos (LX-16A, LD-27MG, LX-15D
 
 ```
 bam/hiwonder/
-├── __init__.py              # Package initialization
-├── actuator.py              # Actuator model definitions
-├── hiwonder.py              # Serial communication protocol
-├── record.py                # Single trajectory recording
-├── all_record.py            # Batch recording script
-├── README.md                # User documentation
-└── IMPLEMENTATION.md        # This file (implementation details)
+├── __init__.py                      # Package initialization
+├── actuator.py                      # Actuator model definitions
+├── hiwonder.py                      # Direct serial communication protocol
+├── record.py                        # Single trajectory recording (hobby servos)
+├── all_record.py                    # Batch recording script (hobby servos)
+├── hiwonder_board_controller.py     # Board controller communication
+├── hiwonder_board_adapter.py        # Adapter for board controller
+├── hiwonder_board_hwi.py            # Low-level board interface
+├── record_board.py                  # Single trajectory recording (board controller)
+├── all_record_board.py              # Batch recording script (board controller)
+├── README.md                        # User documentation
+├── EXPERIMENT_GUIDE.md              # Complete setup guide
+├── BOARD_CONTROLLER_GUIDE.md        # Board controller specific guide
+└── IMPLEMENTATION.md                # This file (implementation details)
 ```
 
 ### Files Modified
@@ -30,11 +44,12 @@ bam/hiwonder/
 
 ### 1. Actuator Models (`actuator.py`)
 
-Defines three specific actuator classes:
+Defines four specific actuator classes:
 
-- **`HiwonderLX16AActuator`**: Most common model (1.6 kg·cm @ 6V)
-- **`HiwonderLD27MGActuator`**: High-torque model (27 kg·cm @ 7.4V)
-- **`HiwonderLX15DActuator`**: Compact model (1.5 kg·cm @ 6V)
+- **`HTD45HActuator`**: Industrial servo (45 kg·cm @ 12V) - **Requires board controller**
+- **`HiwonderLX16AActuator`**: Hobby servo (1.6 kg·cm @ 6V)
+- **`HiwonderLD27MGActuator`**: High-torque hobby servo (27 kg·cm @ 7.4V)
+- **`HiwonderLX15DActuator`**: Compact hobby servo (1.5 kg·cm @ 6V)
 
 All inherit from `VoltageControlledActuator`, providing:
 - `initialize()`: Sets up model parameters (kt, R, armature)
@@ -76,7 +91,9 @@ Basic Hiwonder servos don't provide direct velocity feedback. The estimation app
 
 ### 3. Recording Scripts
 
-#### `record.py`
+#### Direct Serial Scripts (for hobby servos only)
+
+**`record.py`**
 Single trajectory recording with:
 - Configurable pendulum parameters (mass, length, arm_mass)
 - Trajectory execution with timing control
@@ -91,7 +108,7 @@ Single trajectory recording with:
 5. Return to zero position smoothly
 6. Disable torque and save data
 
-#### `all_record.py`
+**`all_record.py`**
 Automated batch recording:
 - Tests multiple trajectories: `sin_time_square`, `sin_sin`, `lift_and_drop`, `up_and_down`
 - Tests multiple KP gains: 8, 16, 32
@@ -102,6 +119,21 @@ Automated batch recording:
 - Systematically varies control parameters (KP) and excitation (trajectory)
 - Captures diverse operating conditions for robust fitting
 - Total of 12 recordings per batch run
+
+#### Board Controller Scripts (for all servos, required for HTD-45H)
+
+**`record_board.py`**
+Single trajectory recording using board controller:
+- Same functionality as `record.py` but using board controller
+- Better communication reliability
+- Real-time battery voltage monitoring
+- Required for HTD-45H servo
+
+**`all_record_board.py`**
+Batch recording using board controller:
+- Same functionality as `all_record.py` but using board controller
+- Synchronized multi-servo support (if needed)
+- Required for HTD-45H servo
 
 ### 4. Integration with BAM
 

@@ -2,6 +2,8 @@
 
 Support for the **Hiwonder HTD-45H** servo (12V, 45 kg·cm) in the BAM (Better Actuator Models) framework.
 
+**IMPORTANT**: The HTD-45H must be controlled via the **Hiwonder Bus Servo Controller Board**. Direct serial communication is not supported.
+
 ## Quick Start
 
 **For complete experimental setup including pendulum test bench**, see **[EXPERIMENT_GUIDE.md](EXPERIMENT_GUIDE.md)**.
@@ -17,30 +19,21 @@ Support for the **Hiwonder HTD-45H** servo (12V, 45 kg·cm) in the BAM (Better A
 | **Protocol** | Half-duplex serial, 115200 baud |
 | **Motor name** | `htd45h` |
 
-## Control Methods
+## Control Method
 
-### Method 1: Board Controller (Recommended ⭐)
-Control via **Hiwonder Bus Servo Controller Board**:
-- More reliable communication
+The HTD-45H servo **requires** control via the **Hiwonder Bus Servo Controller Board**:
+- Reliable half-duplex serial communication
 - Synchronized multi-servo control
 - Built-in battery voltage monitoring
 - Hardware-level servo control
+- Safety features and error handling
 
 **Details**: See [BOARD_CONTROLLER_GUIDE.md](BOARD_CONTROLLER_GUIDE.md)
-
-### Method 2: Direct Serial
-Control via **USB-to-TTL adapter**:
-- Lower cost (just USB-TTL adapter needed)
-- Simpler for single servo
-- Good for prototyping
-
-**Details**: See [EXPERIMENT_GUIDE.md](EXPERIMENT_GUIDE.md)
 
 ## Usage Examples
 
 ### Test Recording
 ```bash
-# Board Controller (Recommended)
 # Using uv (recommended)
 uv run python -m bam.hiwonder.record_board \
     --port /dev/ttyUSB0 \
@@ -62,34 +55,10 @@ python -m bam.hiwonder.record_board \
     --vin 12.0 \
     --logdir test_data \
     --trajectory lift_and_drop
-
-# Direct Serial (Alternative)
-# Using uv (recommended)
-uv run python -m bam.hiwonder.record \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --motor htd45h \
-    --vin 12.0 \
-    --logdir test_data \
-    --trajectory lift_and_drop
-
-# Using regular python
-python -m bam.hiwonder.record \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --motor htd45h \
-    --vin 12.0 \
-    --logdir test_data \
-    --trajectory lift_and_drop
 ```
 
 ### Batch Data Collection
 ```bash
-# Board Controller (Recommended for full dataset)
 # Using uv (recommended)
 uv run python -m bam.hiwonder.all_record_board \
     --port /dev/ttyUSB0 \
@@ -102,27 +71,6 @@ uv run python -m bam.hiwonder.all_record_board \
 
 # Using regular python
 python -m bam.hiwonder.all_record_board \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --motor htd45h \
-    --vin 12.0 \
-    --logdir data_raw_htd45h
-
-# Direct Serial (Alternative)
-# Using uv (recommended)
-uv run python -m bam.hiwonder.all_record \
-    --port /dev/ttyUSB0 \
-    --id 1 \
-    --mass 0.3 \
-    --length 0.12 \
-    --motor htd45h \
-    --vin 12.0 \
-    --logdir data_raw_htd45h
-
-# Using regular python
-python -m bam.hiwonder.all_record \
     --port /dev/ttyUSB0 \
     --id 1 \
     --mass 0.3 \
@@ -220,12 +168,11 @@ python -m bam.drive_backdrive \
 
 ## Hardware Requirements
 
-### Minimal Setup
+### Required Components
 - **HTD-45H servo** (Hiwonder bus servo)
 - **12V power supply** (2-3A capacity, regulated DC recommended)
-- **Control option** (choose one):
-  - Hiwonder Bus Servo Controller Board + USB cable (recommended)
-  - USB-to-TTL adapter (FTDI, CH340, CP2102)
+- **Hiwonder Bus Servo Controller Board** (required)
+- **USB cable** (for board to computer connection)
 - **Pendulum components**:
   - Servo mount (bracket or base plate)
   - Arm: 10-15 cm aluminum tube or carbon fiber rod

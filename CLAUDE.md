@@ -136,11 +136,11 @@ python -m bam.erob.record \
 
 ### Hiwonder HTD-45H Servo
 
-The **Hiwonder HTD-45H** servo (12V, 45 kg·cm, industrial-grade metal gears) is supported with **two control methods**.
+The **Hiwonder HTD-45H** servo (12V, 45 kg·cm, industrial-grade metal gears) must be controlled via the **Hiwonder Bus Servo Controller Board**.
 
 **Complete documentation**: See `bam/hiwonder/EXPERIMENT_GUIDE.md` for full experimental setup including pendulum test bench construction.
 
-**Quick start (Board Controller - Recommended):**
+**Quick start:**
 ```bash
 # Test recording
 python -m bam.hiwonder.record_board \
@@ -164,13 +164,10 @@ python -m bam.hiwonder.all_record_board \
     --logdir data_raw_htd45h
 ```
 
-**Alternative (Direct Serial):**
-Replace `record_board` with `record` and `all_record_board` with `all_record`.
-
 **Hardware requirements:**
 - HTD-45H servo
 - 12V power supply (2-3A)
-- Board Controller (recommended) or USB-to-TTL adapter
+- Hiwonder Bus Servo Controller Board
 - Pendulum: 10-15 cm arm, 200-500 g weight
 
 ### Processing and Fitting

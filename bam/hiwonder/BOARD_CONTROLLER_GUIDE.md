@@ -2,26 +2,19 @@
 
 Complete guide for using Hiwonder servos with the **Hiwonder Bus Servo Controller Board** for BAM friction identification.
 
+**IMPORTANT**: For the HTD-45H servo, the board controller is **required**. Direct serial communication is not supported.
+
 ## Overview
 
-The Hiwonder Bus Servo Controller Board provides a **superior alternative** to direct serial communication:
+The Hiwonder Bus Servo Controller Board provides professional control for Hiwonder servos:
 
-### Advantages ✅
-- **More reliable communication**: Dedicated hardware controller
+### Key Features ✅
+- **Reliable communication**: Dedicated hardware controller with proper timing
 - **Synchronized movements**: Control multiple servos simultaneously
 - **Battery monitoring**: Real-time voltage reading from board
-- **Better timing**: Hardware-based servo control
+- **Hardware-based control**: Better servo control than software-only solutions
 - **Professional setup**: Industrial-grade solution
-
-### vs. Direct Serial Communication
-| Feature | Board Controller | Direct Serial |
-|---------|-----------------|---------------|
-| Reliability | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
-| Multi-servo | ✅ Synchronized | ❌ Sequential |
-| Battery monitor | ✅ Built-in | ❌ Per-servo only |
-| Setup complexity | Simple | USB-TTL adapter needed |
-| Cost | Higher | Lower |
-| Recommended for | **Production, Research** | Prototyping, Single servo |
+- **Multi-servo support**: Up to 254 servos on one bus
 
 ## Hardware Setup
 
@@ -231,42 +224,33 @@ python -m bam.plot \
     --params params/htd45h/m6_board.json
 ```
 
-## Board Controller vs Direct Serial
+## Why Board Controller is Required for HTD-45H
 
-### When to Use Board Controller ✅
+The HTD-45H servo uses a half-duplex serial protocol that requires precise timing and signal handling:
 
-**Recommended for:**
-- Production BAM testing
-- Multi-servo setups
-- Research applications
-- When reliability is critical
-- Professional robotics projects
+**Technical requirements:**
+- Proper half-duplex communication (TX/RX on same line)
+- Precise timing for protocol compliance
+- Voltage level conversion and signal conditioning
+- Multi-servo bus support with proper arbitration
+- Hardware-level error detection and recovery
 
-**Advantages:**
-- Hardware-level servo control
+**Board controller advantages:**
+- Hardware-level servo control with correct timing
 - Synchronized multi-servo movements
-- Built-in battery monitoring
-- More stable communication
-- Professional solution
+- Built-in battery voltage monitoring
+- Reliable communication protocol implementation
+- Professional-grade solution for research and production
 
-### When to Use Direct Serial
-
-**Recommended for:**
-- Quick prototyping
-- Single servo testing
-- Learning/education
-- When board controller not available
-- Budget-constrained projects
-
-**Advantages:**
-- Lower cost (just USB-TTL adapter)
-- Simpler for single servo
-- More portable setup
-- Good for initial testing
+**For HTD-45H specifically:**
+- Board controller is **mandatory** for proper operation
+- Ensures reliable data collection for BAM friction identification
+- Provides stable communication for long recording sessions
+- Eliminates timing-related communication errors
 
 ## Data Format
 
-Log files from board controller have identical format to direct serial, with one addition:
+Log files from board controller use the standard BAM format:
 
 ```json
 {
@@ -281,7 +265,7 @@ Log files from board controller have identical format to direct serial, with one
 }
 ```
 
-This allows BAM to process both types of data identically.
+This format is compatible with all BAM processing tools.
 
 ## Troubleshooting
 
@@ -348,18 +332,18 @@ board.unload_servos([1, 2, 3])
 
 For multi-servo BAM testing, you would need to modify the recording scripts to handle multiple servos.
 
-## Performance Comparison
+## Performance Characteristics
 
-Based on testing (your results may vary):
+Based on testing with board controller:
 
-| Metric | Board Controller | Direct Serial |
-|--------|-----------------|---------------|
-| Communication errors | <0.1% | ~1-2% |
-| Position accuracy | ±1 unit | ±2 units |
-| Timing jitter | <1ms | ~2-5ms |
-| Multi-servo sync | Perfect | Sequential |
-| Max sampling rate | ~200Hz | ~100Hz |
-| Battery monitoring | Real-time | Per-servo |
+| Metric | Performance |
+|--------|-------------|
+| Communication errors | <0.1% |
+| Position accuracy | ±1 unit |
+| Timing jitter | <1ms |
+| Multi-servo sync | Synchronized |
+| Max sampling rate | ~200Hz |
+| Battery monitoring | Real-time |
 
 ## Best Practices
 
