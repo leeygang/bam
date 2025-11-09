@@ -81,7 +81,7 @@ class HiwonderBoardServo:
             duration = 20  # 20ms = fast movement
 
         # Send move command to board
-        self.board.move_servos([(self.servo_id, position_units, duration)])
+        self.board.move_servos([(self.servo_id, position_units)], duration)
 
     def read_position(self) -> float:
         """
