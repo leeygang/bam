@@ -25,20 +25,21 @@ class HiwonderBoardServo:
     as HiwonderServo for BAM data collection.
     """
 
-    def __init__(self, port: str, baudrate: int = 115200, servo_id: int = 1):
+    def __init__(self, port: str, servo_id: int = 1):
         """
         Initialize Hiwonder servo via board controller.
 
         Args:
             port: Serial port (e.g., '/dev/ttyUSB0')
-            baudrate: Baud rate (default: 115200)
             servo_id: Servo ID (default: 1)
+
+        Note:
+            Baudrate is fixed at 9600 for the board controller (not configurable)
         """
         from .hiwonder_board_controller import HiwonderBoardController
 
         self.servo_id = servo_id
         self.port = port
-        self.baudrate = baudrate
 
         # Try to set low latency mode (optional, improves timing)
         try:
@@ -46,10 +47,10 @@ class HiwonderBoardServo:
         except:
             pass  # Not critical if this fails
 
-        # Initialize board controller
-        self.board = HiwonderBoardController(port=port, baudrate=baudrate)
+        # Initialize board controller (baudrate is fixed at 9600)
+        self.board = HiwonderBoardController(port=port)
 
-        print(f"Hiwonder Board Servo initialized (ID: {servo_id})")
+        print(f"Hiwonder Board Servo initialized (ID: {servo_id}, baudrate: 9600)")
 
     def set_torque_enable(self, enable: bool) -> None:
         """
@@ -157,8 +158,8 @@ class HiwonderBoardServoWithSpeedEstimation(HiwonderBoardServo):
     This is the recommended class for BAM data collection.
     """
 
-    def __init__(self, port: str, baudrate: int = 115200, servo_id: int = 1):
-        super().__init__(port, baudrate, servo_id)
+    def __init__(self, port: str, servo_id: int = 1):
+        super().__init__(port, servo_id)
         self.last_position = None
         self.last_time = None
 

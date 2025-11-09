@@ -655,7 +655,6 @@ bam/                                    # Your project root
 | Parameter | Description | HTD-45H Value |
 |-----------|-------------|---------------|
 | `--port` | Serial port | `/dev/ttyUSB0` (Linux), `/dev/tty.usbserial-*` (macOS) |
-| `--baudrate` | Communication speed | `115200` (default) |
 | `--id` | Servo ID | `1` (default) |
 | `--mass` | End weight (kg) | `0.3` (300 g) |
 | `--length` | Arm length (m) | `0.12` (12 cm) |
@@ -666,6 +665,8 @@ bam/                                    # Your project root
 | `--trajectory` | Trajectory type | `lift_and_drop`, `sin_time_square`, etc. |
 | `--kp` | Control gain | `8`, `16`, or `32` |
 | `--speak` | Voice announcements | flag (optional) |
+
+**Note:** Baudrate is fixed at 9600 for the board controller (not configurable).
 
 ## Complete Data Processing Workflow
 

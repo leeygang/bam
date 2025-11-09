@@ -39,6 +39,9 @@ class HiwonderBoardController:
     CMD_MULT_SERVO_UNLOAD = 0x14       # Unload multiple servos
     CMD_MULT_SERVO_POS_READ = 0x15     # Read multiple servo positions
 
+    # Communication speed (default 9600)
+    BAUD_RATE = 9600
+
     HEADER = [0x55, 0x55]              # Protocol header
 
     class receivedResponse(object):
@@ -46,19 +49,18 @@ class HiwonderBoardController:
             self.cmd = cmd
             self.data = list()
 
-    def __init__(self, port="/dev/ttyUSB0", baudrate=115200, timeout=0.5):
+    def __init__(self, port="/dev/ttyUSB0", timeout=0.5):
         """
         Initialize connection to Hiwonder Bus Servo Controller board
 
         Args:
             port: Serial port (e.g., /dev/ttyUSB0, /dev/serial0)
-            baudrate: Communication speed (default 115200)
             timeout: Serial read timeout in seconds
         """
         try:
             self.serial = serial.Serial(
                 port=port,
-                baudrate=baudrate,
+                baudrate=self.BAUD_RATE,
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_ONE,
@@ -68,7 +70,7 @@ class HiwonderBoardController:
             # Flush any existing data
             self.serial.flushInput()
             self.serial.flushOutput()
-            print(f"Hiwonder Board Controller initialized on {port} at {baudrate} baud")
+            print(f"Hiwonder Board Controller initialized on {port} at {self.BAUD_RATE} baud")
         except Exception as e:
             raise Exception(f"Failed to open serial port {port}: {e}")
 

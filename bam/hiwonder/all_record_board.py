@@ -7,7 +7,6 @@ arg_parser.add_argument("--mass", type=float, required=True, help="Mass of the p
 arg_parser.add_argument("--length", type=float, required=True, help="Length of the pendulum (m)")
 arg_parser.add_argument("--arm_mass", type=float, default=0.0, help="Mass of the pendulum arm (kg)")
 arg_parser.add_argument("--port", type=str, default="/dev/ttyUSB0", help="Serial port for board controller")
-arg_parser.add_argument("--baudrate", type=int, default=9600, help="Baud rate")
 arg_parser.add_argument("--id", type=int, default=1, help="Servo ID")
 arg_parser.add_argument("--logdir", type=str, required=True, help="Directory to save logs")
 arg_parser.add_argument("--motor", type=str, required=True, help="Motor model (htd45h, lx16a, ld27mg, lx15d)")
@@ -34,7 +33,7 @@ print("HIWONDER SERVO BATCH RECORDING (BOARD CONTROLLER)")
 print("=" * 60)
 print(f"Motor: {args.motor}")
 print(f"Mass: {args.mass}kg, Length: {args.length}m, Arm mass: {args.arm_mass}kg")
-print(f"Port: {args.port}, Baudrate: {args.baudrate}")
+print(f"Port: {args.port}, Baudrate: 9600 (fixed)")
 print(f"Servo ID: {args.id}")
 print(f"Input voltage: {args.vin}V")
 print(f"Trajectories: {', '.join(trajectories)}")
@@ -72,7 +71,6 @@ for kp in kp_values:
             "--length", str(args.length),
             "--arm_mass", str(args.arm_mass),
             "--port", args.port,
-            "--baudrate", str(args.baudrate),
             "--id", str(args.id),
             "--logdir", args.logdir,
             "--trajectory", trajectory,

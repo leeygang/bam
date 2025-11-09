@@ -12,7 +12,6 @@ arg_parser.add_argument("--mass", type=float, required=True, help="Mass of the p
 arg_parser.add_argument("--length", type=float, required=True, help="Length of the pendulum (m)")
 arg_parser.add_argument("--arm_mass", type=float, default=0.0, help="Mass of the pendulum arm (kg)")
 arg_parser.add_argument("--port", type=str, default="/dev/ttyUSB0", help="Serial port for board controller")
-arg_parser.add_argument("--baudrate", type=int, default=9600, help="Baud rate (default: 9600)")
 arg_parser.add_argument("--id", type=int, default=1, help="Servo ID (default: 1)")
 arg_parser.add_argument("--logdir", type=str, required=True, help="Directory to save logs")
 arg_parser.add_argument("--trajectory", type=str, default="lift_and_drop", help="Trajectory name")
@@ -28,10 +27,10 @@ os.makedirs(args.logdir, exist_ok=True)
 if args.trajectory not in trajectories:
     raise ValueError(f"Unknown trajectory: {args.trajectory}. Available: {list(trajectories.keys())}")
 
-# Initialize servo via board controller
-print(f"Connecting to Hiwonder Board Controller on {args.port} at {args.baudrate} baud...")
+# Initialize servo via board controller (baudrate is fixed at 9600)
+print(f"Connecting to Hiwonder Board Controller on {args.port}...")
 print(f"Controlling servo ID: {args.id}")
-servo = HiwonderBoardServoWithSpeedEstimation(args.port, args.baudrate, args.id)
+servo = HiwonderBoardServoWithSpeedEstimation(args.port, args.id)
 trajectory = trajectories[args.trajectory]
 
 print(f"Running trajectory: {args.trajectory}")
