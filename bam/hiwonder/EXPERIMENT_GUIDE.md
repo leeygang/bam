@@ -734,56 +734,209 @@ uv run python -m bam.drive_backdrive \
     --max_torque 50
 ```
 
-<details>
-<summary>Using regular python (legacy)</summary>
+## Expected Results
 
+### Viewing Plots on macOS
+
+If you're running on macOS (locally, not via SSH), matplotlib plots will appear automatically:
+
+**Steps:**
+
+1. **Run the plot command:**
+   ```bash
+   uv run python -m bam.plot \
+       --actuator htd45h \
+       --logdir data_processed_htd45h
+   ```
+
+2. **What happens:**
+   - A matplotlib window will pop up showing the first trajectory plot
+   - The window shows 2-3 subplots (position, speed, control)
+   - **The script pauses** - you must close the window to see the next plot
+
+3. **Navigate through plots:**
+   - **Close the current window** (click X or Cmd+W) to see the next trajectory
+   - The script will show one plot at a time for each of your 12 trajectories
+   - After viewing all plots, the script exits
+
+4. **Tips:**
+   - Take your time reviewing each plot
+   - Use the matplotlib toolbar to zoom/pan if needed
+   - You can maximize the window for better visibility
+   - Press the save icon in matplotlib toolbar to save specific plots as PNG
+   - Look for the window title showing: "Figure 1" (it might be behind other windows)
+
+**What you'll see in the matplotlib window:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Figure 1                                          [- □ X]│
+├─────────────────────────────────────────────────────────┤
+│ [📁] [🏠] [←][→] [🔍+][🔍-] [⚙️] [💾]  ← Toolbar        │
+├─────────────────────────────────────────────────────────┤
+│  htd45h, lift_and_drop, m=0.3, l=0.12, k=32            │
+│   2.0 ┐                                                 │
+│   1.0 ┤     /\                                          │
+│   0.0 ┼────/──\─────────                                │
+│  -1.0 ┤         \  /                                    │
+│       └──────────\/ ────────────────► time [s]          │
+│                                                          │
+│   5.0 ┐                                                 │
+│   0.0 ┼─/\─/\─────                                      │
+│  -5.0 ┤      \─/\                                       │
+│       └────────────────────────────► time [s]           │
+│                                                          │
+│  12.0 ┐                                                 │
+│   0.0 ┼─────────────                                    │
+│ -12.0 ┤     ████                                        │
+│       └────────────────────────────► time [s]           │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Important:** Close this window to see the next plot!
+
+**Troubleshooting on macOS:**
+
+**Problem: Matplotlib window doesn't appear**
+
+This is a common issue on macOS. Try these solutions in order:
+
+**Solution 1: Check if the backend is correct**
 ```bash
-# 1. Process raw data (resample to constant timestep)
-python -m bam.process \
-    --raw data_raw_htd45h \
-    --logdir data_processed_htd45h \
-    --dt 0.005
+# Check current backend
+python -c "import matplotlib; print(matplotlib.get_backend())"
 
-# 2. Verify data quality with plots
-python -m bam.plot \
+# If it shows 'agg' (non-interactive), you need to fix it
+# Create/edit matplotlib config:
+mkdir -p ~/.matplotlib
+echo "backend: MacOSX" > ~/.matplotlib/matplotlibrc
+
+# Or set it temporarily:
+export MPLBACKEND=MacOSX
+
+# Then try again:
+uv run python -m bam.plot \
     --actuator htd45h \
     --logdir data_processed_htd45h
-
-# 3. Fit baseline model (M1: Coulomb-Viscous)
-mkdir -p params/htd45h
-
-python -m bam.fit \
-    --actuator htd45h \
-    --model m1 \
-    --logdir data_processed_htd45h \
-    --method cmaes \
-    --output params/htd45h/m1.json \
-    --trials 5000
-
-# 4. Fit advanced model (M6: Full friction model)
-python -m bam.fit \
-    --actuator htd45h \
-    --model m6 \
-    --logdir data_processed_htd45h \
-    --method cmaes \
-    --output params/htd45h/m6.json \
-    --trials 20000
-
-# 5. Validate results (compare simulation vs real data)
-python -m bam.plot \
-    --actuator htd45h \
-    --logdir data_processed_htd45h \
-    --sim \
-    --params params/htd45h/m6.json
-
-# 6. Generate friction characteristic diagrams
-python -m bam.drive_backdrive \
-    --params params/htd45h/m6.json \
-    --max_torque 50
 ```
-</details>
 
-## Expected Results
+**Solution 2: Install/reinstall matplotlib**
+```bash
+# Reinstall matplotlib with MacOSX backend support
+uv pip uninstall matplotlib
+uv pip install matplotlib
+
+# Verify it works:
+python -c "import matplotlib.pyplot as plt; plt.plot([1,2,3]); plt.show()"
+# This should show a simple plot window
+```
+
+**Solution 3: Use TkAgg backend instead**
+```bash
+# Install tkinter support
+brew install python-tk
+
+# Set backend
+export MPLBACKEND=TkAgg
+
+# Try plotting again
+uv run python -m bam.plot \
+    --actuator htd45h \
+    --logdir data_processed_htd45h
+```
+
+**Solution 4: Check for error messages**
+```bash
+# Run with verbose output to see what's happening
+uv run python -m bam.plot \
+    --actuator htd45h \
+    --logdir data_processed_htd45h 2>&1 | tee plot_output.log
+
+# Check if there are any error messages
+cat plot_output.log
+```
+
+**Solution 5: Verify data exists**
+```bash
+# Make sure you have processed data
+ls -lh data_processed_htd45h/
+
+# Should show JSON files
+# If empty, you need to run bam.process first
+```
+
+**Solution 6: Run with explicit backend in Python**
+```bash
+# Create a wrapper script
+cat > test_plot.py << 'EOF'
+import matplotlib
+matplotlib.use('MacOSX')  # Force MacOSX backend
+import matplotlib.pyplot as plt
+
+# Test if plotting works
+plt.plot([1, 2, 3], [1, 4, 9])
+plt.title("Test Plot")
+plt.show()
+print("If you see a window, matplotlib works!")
+EOF
+
+python test_plot.py
+
+# If this works, the issue is with how bam.plot is being called
+```
+
+**Solution 7: Use alternative - save plots to files (RECOMMENDED)**
+
+If you can't get the window to appear, save plots as PNG files instead:
+
+```bash
+# Use the built-in plot_save script
+uv run python -m bam.plot_save \
+    --actuator htd45h \
+    --logdir data_processed_htd45h \
+    --output plots
+
+# This will:
+# - Save all plots as PNG files in plots/ directory
+# - Print the filename for each saved plot
+# - Tell you how to open them when done
+
+# View the plots
+open plots/
+# Or individually:
+open plots/lift_and_drop_kp32.png
+```
+
+This is often the easiest solution if matplotlib GUI isn't working!
+
+**Most Common Causes:**
+
+1. **Backend set to 'Agg'** (non-interactive) - Fix with Solution 1
+2. **matplotlib installed without GUI support** - Fix with Solution 2
+3. **Missing processed data** - Fix with Solution 5
+4. **Running in SSH session** - Use X11 forwarding or save to files
+
+**Quick Test:**
+```bash
+# This should open a simple plot window:
+python -c "import matplotlib.pyplot as plt; plt.plot([1,2,3]); plt.title('Test'); plt.show()"
+
+# If this doesn't work, your matplotlib GUI is broken
+# If this works, then the issue is with bam.plot command
+```
+
+**Alternative: Save all plots as files (no GUI needed):**
+
+If you prefer to review plots later or in batch:
+
+```bash
+# Use the save_plots.py script from the SSH section
+# Or set non-interactive backend:
+export MPLBACKEND=Agg
+
+# Then plots won't display but will save to files
+# (You'll need to modify plot.py to use plt.savefig instead of plt.show)
+```
 
 ### Viewing Plots via SSH
 
