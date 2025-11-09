@@ -12,7 +12,7 @@ arg_parser.add_argument("--mass", type=float, required=True, help="Mass of the p
 arg_parser.add_argument("--length", type=float, required=True, help="Length of the pendulum (m)")
 arg_parser.add_argument("--arm_mass", type=float, default=0.0, help="Mass of the pendulum arm (kg)")
 arg_parser.add_argument("--port", type=str, default="/dev/ttyUSB0", help="Serial port")
-arg_parser.add_argument("--baudrate", type=int, default=115200, help="Baud rate (default: 115200)")
+arg_parser.add_argument("--baudrate", type=int, default=9600, help="Baud rate (default: 115200)")
 arg_parser.add_argument("--id", type=int, default=1, help="Servo ID (default: 1)")
 arg_parser.add_argument("--logdir", type=str, required=True, help="Directory to save logs")
 arg_parser.add_argument("--trajectory", type=str, default="lift_and_drop", help="Trajectory name")
