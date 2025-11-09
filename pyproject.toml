@@ -40,7 +40,7 @@ dependencies = [
     "matplotlib",
     "pygame",
     "colorama",
-    "pyserial",  # For Hiwonder servos
+    "pyserial", # For Hiwonder servos
 ]
 
 [project.optional-dependencies]
