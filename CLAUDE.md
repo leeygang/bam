@@ -56,6 +56,26 @@ The `bam/fit.py` script uses Optuna to optimize model parameters:
 ## Key Commands
 
 ### Installation
+
+**Using uv (recommended):**
+```bash
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install core dependencies for identification/fitting work
+uv pip install -e .
+
+# Install with 2R validation dependencies
+uv pip install -e ".[validation]"
+
+# Install all dependencies (core + validation)
+uv pip install -e ".[all]"
+
+# Install development dependencies
+uv pip install -e ".[dev]"
+```
+
+**Using pip (legacy):**
 ```bash
 # For identification/fitting work
 pip install -r requirements_bam.txt
@@ -114,13 +134,13 @@ python -m bam.erob.record \
 
 **Available trajectories:** `sin_time_square`, `sin_sin`, `lift_and_drop`, `up_and_down`, `nothing`
 
-### Hiwonder Servos
+### Hiwonder HTD-45H Servo
 
-Hiwonder bus servos (HTD-45H, LX-16A, LD-27MG, LX-15D) are supported with **two control methods**.
+The **Hiwonder HTD-45H** servo (12V, 45 kg·cm, industrial-grade metal gears) is supported with **two control methods**.
 
-**Complete documentation**: See `bam/hiwonder/EXPERIMENT_GUIDE.md` for full experimental setup and data collection guide.
+**Complete documentation**: See `bam/hiwonder/EXPERIMENT_GUIDE.md` for full experimental setup including pendulum test bench construction.
 
-**Quick start (HTD-45H with Board Controller - Recommended):**
+**Quick start (Board Controller - Recommended):**
 ```bash
 # Test recording
 python -m bam.hiwonder.record_board \
@@ -133,7 +153,7 @@ python -m bam.hiwonder.record_board \
     --logdir data_raw_htd45h \
     --trajectory lift_and_drop
 
-# Batch recording (all trajectories and KP values)
+# Batch recording (12 trajectories: 4 types × 3 KP values)
 python -m bam.hiwonder.all_record_board \
     --port /dev/ttyUSB0 \
     --id 1 \
@@ -147,9 +167,11 @@ python -m bam.hiwonder.all_record_board \
 **Alternative (Direct Serial):**
 Replace `record_board` with `record` and `all_record_board` with `all_record`.
 
-**Supported motors:** `htd45h` (12V, 45 kg·cm - primary), `lx16a` (6V), `ld27mg` (7.4V), `lx15d` (6V)
-
-**Hardware:** Board Controller (recommended) or USB-to-TTL adapter + 12V power supply for HTD-45H
+**Hardware requirements:**
+- HTD-45H servo
+- 12V power supply (2-3A)
+- Board Controller (recommended) or USB-to-TTL adapter
+- Pendulum: 10-15 cm arm, 200-500 g weight
 
 ### Processing and Fitting
 
@@ -277,6 +299,11 @@ Logs are JSON dictionaries with:
 ### Module Execution Pattern
 Most scripts use `if __name__ == "__main__":` with argparse at module level. Always run as modules:
 ```bash
+# Using uv (recommended)
+uv run python -m bam.fit ...     # Correct
+uv run python bam/fit.py ...     # Will fail due to relative imports
+
+# Using regular python
 python -m bam.fit ...     # Correct
 python bam/fit.py ...     # Will fail due to relative imports
 ```

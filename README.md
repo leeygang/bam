@@ -41,11 +41,20 @@ For a detailled description of these models, please refer to the [article](https
 
 ## Requirements
 
-To install the requirements for the identification part, you can use the following command:
+**Using uv (recommended):**
+
+```bash
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install core dependencies for identification work
+uv pip install -e .
+```
+
+**Using pip (legacy):**
 
 ```bash
 pip install -r requirements_bam.txt
-
 ```
 
 ## Setup
@@ -268,11 +277,20 @@ URDF is detailed in the `2R/README.md`.
 
 ## Requirements
 
-To install the requirements for the validation part, you can use the following command:
+**Using uv (recommended):**
+
+```bash
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies for 2R validation work
+uv pip install -e ".[validation]"
+```
+
+**Using pip (legacy):**
 
 ```bash
 pip install -r requirements_2R.txt
-
 ```
 
 ## Setup

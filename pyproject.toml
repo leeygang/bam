@@ -1,0 +1,91 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bam"
+version = "0.0.1"
+description = "Better Actuator Models - Research project for identifying and simulating extended friction models for servo actuators"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Marc Duclusaud"},
+    {name = "Grégoire Passault"},
+    {name = "Yonatan Gu Li"},
+]
+keywords = ["robotics", "actuators", "friction", "simulation", "servo", "reinforcement-learning"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+# Core dependencies (required for identification/fitting work)
+dependencies = [
+    "zmq",
+    "protobuf==3.20",
+    "numpy",
+    "dynamixel_sdk",
+    "optuna",
+    "cmaes",
+    "wandb",
+    "matplotlib",
+    "pygame",
+    "colorama",
+    "pyserial",  # For Hiwonder servos
+]
+
+[project.optional-dependencies]
+# Dependencies for 2R validation work
+validation = [
+    "placo",
+    "mujoco",
+    "pandas",
+]
+
+# All dependencies
+all = [
+    "bam[validation]",
+]
+
+# Development dependencies
+dev = [
+    "pytest",
+    "pytest-cov",
+    "black",
+    "isort",
+    "flake8",
+    "mypy",
+]
+
+[project.urls]
+Homepage = "https://github.com/Rhoban/bam"
+Repository = "https://github.com/Rhoban/bam"
+Documentation = "https://github.com/Rhoban/bam/blob/main/README.md"
+"Bug Tracker" = "https://github.com/Rhoban/bam/issues"
+"Research Paper" = "https://arxiv.org/pdf/2410.08650v1"
+
+[tool.setuptools.packages.find]
+include = ["bam*", "2R*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
