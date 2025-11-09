@@ -19,7 +19,27 @@ arg_parser.add_argument("--logdir", type=str, required=True)
 arg_parser.add_argument("--dt", type=float, default=0.005)
 args = arg_parser.parse_args()
 
-for logfile in glob.glob(f"{args.raw}/*.json"):
+# Create output directory if it doesn't exist
+os.makedirs(args.logdir, exist_ok=True)
+
+# Check if raw directory exists and has files
+if not os.path.exists(args.raw):
+    print(f"Error: Raw data directory '{args.raw}' does not exist!")
+    print(f"Current directory: {os.getcwd()}")
+    exit(1)
+
+raw_files = glob.glob(f"{args.raw}/*.json")
+if not raw_files:
+    print(f"Error: No JSON files found in '{args.raw}'")
+    print(f"Make sure you have collected raw data first using:")
+    print(f"  python -m bam.hiwonder.all_record_board ...")
+    exit(1)
+
+print(f"Found {len(raw_files)} files to process")
+print(f"Output directory: {args.logdir}")
+print()
+
+for logfile in raw_files:
     data = json.load(open(logfile))
     data_output = deepcopy(data)
     data_output["entries"] = []
@@ -52,3 +72,9 @@ for logfile in glob.glob(f"{args.raw}/*.json"):
     filename = os.path.basename(logfile)
     output_filename = f"{args.logdir}/{filename}"
     json.dump(data_output, open(output_filename, "w"))
+    print(f"  Saved: {output_filename}")
+
+print()
+print(f"✓ Processing complete! {len(raw_files)} files processed.")
+print(f"  Output directory: {args.logdir}/")
+print(f"  Next step: python -m bam.plot --actuator htd45h --logdir {args.logdir}")

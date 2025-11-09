@@ -511,7 +511,7 @@ uv run python -m bam.hiwonder.record_board \
     --port /dev/ttyUSB0 \
     --id 1 \
     --mass 0.3 \
-    --length 0.12 \
+    --length 0.567 \
     --motor htd45h \
     --vin 12.0 \
     --logdir test_data \
@@ -580,7 +580,7 @@ Once test recording succeeds, collect complete dataset for model fitting:
 uv run python -m bam.hiwonder.all_record_board \
     --port /dev/ttyUSB0 \
     --id 1 \
-    --mass 0.3 \
+    --mass 0.567 \
     --length 0.12 \
     --motor htd45h \
     --vin 12.0 \
@@ -614,6 +614,42 @@ python -m bam.hiwonder.all_record_board \
 - Let servo rest briefly between recordings if needed
 - Note any anomalies for later reference
 
+**After batch recording completes:**
+- Raw data files saved in `data_raw_htd45h/` directory
+- Typical files: 12 JSON files with names like `2025-01-15_14h30m45.json`
+- File naming: Timestamp of when recording started
+- Each file ~50-200 KB depending on trajectory duration
+
+### Data File Organization
+
+Understanding where files are saved at each step:
+
+```
+bam/                                    # Your project root
+├── data_raw_htd45h/                   # Raw recordings from hardware
+│   ├── 2025-01-15_14h30m45.json      # lift_and_drop, kp=8
+│   ├── 2025-01-15_14h31m12.json      # lift_and_drop, kp=16
+│   ├── 2025-01-15_14h31m38.json      # lift_and_drop, kp=32
+│   ├── 2025-01-15_14h32m05.json      # sin_time_square, kp=8
+│   └── ... (12 files total)
+│
+├── data_processed_htd45h/             # Processed (after bam.process)
+│   ├── 2025-01-15_14h30m45.json      # Same names, resampled data
+│   ├── 2025-01-15_14h31m12.json
+│   └── ... (12 files, same as raw)
+│
+└── params/                             # Fitted model parameters (after bam.fit)
+    └── htd45h/
+        ├── m1.json                     # Baseline Coulomb-Viscous model
+        └── m6.json                     # Advanced friction model
+```
+
+**Key differences between raw and processed:**
+- **Raw files**: Variable sampling rate (~100-200 Hz, irregular)
+- **Processed files**: Constant sampling rate (200 Hz if dt=0.005, regular)
+- **Same metadata**: mass, length, kp, trajectory, etc.
+- **Processing**: Linear interpolation to uniform timesteps
+
 ### Command Reference
 
 | Parameter | Description | HTD-45H Value |
@@ -643,6 +679,17 @@ uv run python -m bam.process \
     --raw data_raw_htd45h \
     --logdir data_processed_htd45h \
     --dt 0.005
+
+# The script will:
+# - Auto-create data_processed_htd45h/ directory if needed
+# - Read all JSON files from data_raw_htd45h/
+# - Resample each to constant dt=0.005s (200 Hz)
+# - Save processed files to data_processed_htd45h/
+# - Print "✓ Processing complete!" when done
+
+# Check what was created:
+ls -lh data_processed_htd45h/
+# You should see 12 JSON files (same names as raw data)
 
 # 2. Verify data quality with plots
 uv run python -m bam.plot \
@@ -1224,6 +1271,112 @@ For each trajectory plot, verify:
 - M1 MAE: ~0.06 rad → M6 MAE: ~0.03 rad (50% reduction)
 
 ## Troubleshooting
+
+### Data Processing Issues
+
+#### "data_processed_htd45h not found" after bam.process
+
+**Problem:** After running `python -m bam.process`, the output directory doesn't exist.
+
+**Solutions:**
+
+1. **Check if you actually have raw data:**
+   ```bash
+   # Verify raw data exists
+   ls data_raw_htd45h/
+
+   # If empty or doesn't exist:
+   # You need to collect data first!
+   python -m bam.hiwonder.all_record_board ...
+   ```
+
+2. **Check for error messages:**
+   ```bash
+   # Run again and look carefully at output
+   uv run python -m bam.process \
+       --raw data_raw_htd45h \
+       --logdir data_processed_htd45h \
+       --dt 0.005
+
+   # Should see:
+   # "Found X files to process"
+   # "* Processing ..."
+   # "✓ Processing complete!"
+
+   # If you see errors, read them carefully
+   ```
+
+3. **Check your current directory:**
+   ```bash
+   # Make sure you're in the right place
+   pwd
+   # Should show: /path/to/bam
+
+   # Look for data_raw_htd45h
+   ls -la | grep data_raw
+
+   # If not found, navigate to correct directory
+   cd /path/to/bam
+   ```
+
+4. **Try with absolute paths:**
+   ```bash
+   # Use full paths to be explicit
+   uv run python -m bam.process \
+       --raw $(pwd)/data_raw_htd45h \
+       --logdir $(pwd)/data_processed_htd45h \
+       --dt 0.005
+   ```
+
+5. **Verify the script ran successfully:**
+   ```bash
+   # After running, check:
+   ls -lh data_processed_htd45h/
+
+   # Count files
+   ls data_processed_htd45h/*.json | wc -l
+   # Should show: 12 (or however many raw files you have)
+   ```
+
+**Note:** The updated `bam.process` script now auto-creates the output directory and shows clear error messages if raw data is missing.
+
+#### No files in data_processed_htd45h
+
+**Problem:** Directory exists but is empty.
+
+**Cause:** The processing script found no JSON files in the raw directory.
+
+**Solutions:**
+```bash
+# Check what's in raw directory
+ls -la data_raw_htd45h/
+
+# Look for JSON files specifically
+ls data_raw_htd45h/*.json
+
+# If no JSON files, you haven't collected data yet
+# Run the recording command first
+```
+
+#### Processing script shows "0 files found"
+
+**Problem:** Script says "Found 0 files to process"
+
+**Cause:** Path to raw data is incorrect.
+
+**Solutions:**
+```bash
+# Check exact path
+ls data_raw_htd45h/
+
+# If it doesn't exist:
+# - You're in wrong directory
+# - You used different name when recording
+# - Data was never collected
+
+# Find where your data actually is
+find . -name "*.json" -type f | head -20
+```
 
 ### Hardware Issues
 
